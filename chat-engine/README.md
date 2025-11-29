@@ -75,6 +75,7 @@ console.log(response.content);
 ```js
 {
   content: string | null,
+  reasoning: string | null,
   toolCalls: array | null,     // если модель вызвала функции
   usage: { prompt_tokens, completion_tokens, total_tokens }
 }
@@ -191,9 +192,6 @@ if (response.toolCalls) {
 }
 ```
 
-## Полный список параметров API
-
-Все параметры из официальной документации OpenRouter/OpenAI поддерживаются:
 ## Полный список параметров API
 
 Все параметры из официальной документации OpenRouter/OpenAI поддерживаются:
