@@ -1,7 +1,7 @@
 const fetch = require('node-fetch');
 const { pipeline } = require('stream/promises');
-require('dotenv').config();
 const { handleError } = require('./utils');
+require('dotenv').config();
 
 const API_BASE = 'https://openrouter.ai/api/v1';
 const API_KEY = process.env.OPENROUTER_API_KEY;
