@@ -1,7 +1,7 @@
 {
   "name": "discord-bot",
   "version": "1.0.0",
-  "description": "",
+  "description": "> [!WARNING]\r > this project in active development, not ready yet",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -13,5 +13,13 @@
   "dependencies": {
     "discord.js": "^14.25.1",
     "dotenv": "^17.2.3"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BowL1ce/SHIL.git"
+  },
+  "bugs": {
+    "url": "https://github.com/BowL1ce/SHIL/issues"
+  },
+  "homepage": "https://github.com/BowL1ce/SHIL#readme"
 }
