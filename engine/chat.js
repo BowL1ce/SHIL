@@ -5,26 +5,18 @@ export class Chat {
         this.messages = [];
     }
 
-    send(content, onStream, onFinal) {
-        this.messages.push({
-            role: "user",
-            content: content
-        });
+    getMessages() {
+        return this.messages;
+    }
+
+    async send(content, ...apiArgs) {
+        this.messages.push({ role: "user", content });
 
         const api = new Api({
             messages: this.messages,
             model: "nvidia/nemotron-nano-9b-v2:free"
         });
 
-        api.send(
-            onStream,
-            async (full) => {
-                this.messages.push({
-                    role: "assistant",
-                    content: full.choices?.[0]?.delta?.content
-                });
-                await onFinal();
-            }
-        );
+        api.send(...apiArgs);
     }
 }

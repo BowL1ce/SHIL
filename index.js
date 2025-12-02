@@ -1,15 +1,31 @@
 import { Chat } from "./engine/chat.js";
 import 'dotenv/config';
 
+const tools = [
+  {
+    type: "function",
+    function: {
+      name: "getUserIdByNick",
+      description: "Получает ID пользователя по никнейму",
+      parameters: { type: "object", properties: { nick: { type: "string" } }, required: ["nick"] }
+    },
+    execute: async (args) => {
+      console.log(1);
+      return "пон";
+    }
+  }
+];
+
 const chat = new Chat();
 chat.send(
-  "привет",
-  async (chunk) => {
-    console.log(chunk);
+  "какой ID у пользователя @vasya?",
+  async (buffer) => {
+    
   },
-  async (full) => {
-    console.log(full);
-  }
+  async (response) => {
+    console.log(response)
+  },
+  tools
 );
 
-console.log(chat.messages);
+console.log(chat.getMessages());
