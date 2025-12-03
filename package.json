@@ -12,6 +12,7 @@
   "type": "module",
   "dependencies": {
     "@openrouter/sdk": "^0.1.27",
+    "@tavily/core": "^0.5.13",
     "discord.js": "^14.25.1",
     "dotenv": "^17.2.3"
   },

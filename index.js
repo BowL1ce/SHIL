@@ -1,21 +1,6 @@
 import { Chat } from "./engine/chat.js";
+import { webSearch } from "./engine/tools/webSearch.js";
 import 'dotenv/config';
-
-const tools = [
-  {
-    type: "function",
-    function: {
-      name: "web_search",
-      description: "web search tool",
-      parameters: { type: "object", properties: { query: { type: "string" } }, required: ["query"] }
-    },
-    execute: async (args) => {
-      console.log(args);
-      return "По данным на 19:32 3 декабря 2025 года, в Москве температура +2°, ясно, влажность 91%, давление 759 мм, ветер 1 м/с, до 2 м/с, ЮЗ.К 23:00 ожидается температура +2°, пасмурно, влажность 90%, давление 758 мм, ветер 1 м/с, до 2 м/с, ЮЗ"
-    },
-    loop: true
-  }
-];
 
 (async () => {
   const chat = new Chat();
@@ -27,7 +12,7 @@ const tools = [
     async (response) => {
         console.log(response);
     },
-    tools
+    [webSearch]
   );
 
   console.log(chat.messages);
