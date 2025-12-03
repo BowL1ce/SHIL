@@ -70,6 +70,8 @@ export class Api {
             }
 
             for (const [index, toolCall] of this.response.toolCalls.entries()) {
+                if (this.response.toolCalls[index].result) continue;
+
                 const tool = tools.find(t => t.function.name === toolCall.name);
                 const args = JSON.parse(toolCall.arguments);
                 const result = await tool.execute(args);
@@ -79,18 +81,20 @@ export class Api {
             }
 
             if (this.loop) {
-                this.apiOptions.messages.push({
+                this.options.messages.push({
                     role: this.response.role,
-                    content: this.response.toolCalls.map(tool => ({
+                    content: JSON.stringify(this.response.toolCalls.map(tool => ({
                         name: tool.name,
                         arguments: tool.arguments
-                    })).toString()
+                    })))
                 });
-                this.apiOptions.messages.push({
+                this.options.messages.push({
                     role: "user",
-                    content: this.response.toolCalls.toString()
+                    content: JSON.stringify(this.response.toolCalls)
                 });
             }
+
+            console.log(this.options.messages)
 
             this.iteration++;
         }

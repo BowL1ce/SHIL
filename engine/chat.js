@@ -9,11 +9,9 @@ export class Chat {
         this.messages.push({ role: "user", content });
 
         const api = new Api({
-            messages: this.messages,
+            messages: this.messages.slice(),
             model: "nvidia/nemotron-nano-9b-v2:free"
         });
-
-        api.send(...apiArgs);
 
         apiArgs.onFinal = async (response) => {
             this.messages.push({
@@ -23,6 +21,8 @@ export class Chat {
             console.log(this.messages);
             await apiArgs.onFinal(response)
         }
+
+        await api.send(...apiArgs);
     }
 
     editLastAssistantMessage(content) {
