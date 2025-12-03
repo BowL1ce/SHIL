@@ -16,16 +16,18 @@ const tools = [
   }
 ];
 
-const chat = new Chat();
-chat.send(
-  "какой ID у пользователя @vasya?",
-  async (buffer) => {
-    
-  },
-  async (response) => {
-    console.log(response)
-  },
-  tools
-);
+(async () => {
+  const chat = new Chat();
+  await chat.send(
+    "какой ID у пользователя @vasya?",
+    async (response) => {
+      
+    },
+    async (response) => {
+      
+    },
+    tools
+  );
 
-console.log(chat.getMessages());
+  console.log(chat.messages);
+})();
