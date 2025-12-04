@@ -3,7 +3,7 @@ import { OpenRouter } from '@openrouter/sdk';
 export class Api {
     constructor(apiOptions = {}) {
         this.openRouter = new OpenRouter({
-            apiKey: process.env.OPENROUTER_API_KEY2
+            apiKey: process.env.OPENROUTER_API_KEY1
         });
         this.options = { ...apiOptions };
 
@@ -21,7 +21,7 @@ export class Api {
         this.loop = false;
     }
 
-    async send(onStream, onFinal, tools = []) {
+    async send(onStream, tools = [], diffTime = 3000) {
         this.startTime = performance.now();
 
         const toolsMap = tools.map(tool => ({
@@ -63,7 +63,7 @@ export class Api {
                     }
                 }
 
-                if (performance.now() - this.startTime > 3000) {
+                if (performance.now() - this.startTime > diffTime) {
                     this.startTime = performance.now();
                     await onStream(this.response);
                 }
@@ -97,6 +97,6 @@ export class Api {
             this.iteration++;
         }
 
-        await onFinal(this.response);
+        return this.response;
     }
 }
