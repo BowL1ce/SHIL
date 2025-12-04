@@ -3,7 +3,7 @@ import { OpenRouter } from '@openrouter/sdk';
 export class Api {
     constructor(apiOptions = {}) {
         this.openRouter = new OpenRouter({
-            apiKey: process.env.OPENROUTER_API_KEY1
+            apiKey: process.env.OPENROUTER_API_KEY2
         });
         this.options = { ...apiOptions };
 
@@ -32,6 +32,8 @@ export class Api {
                 parameters: tool.function.parameters
             }
         }));
+
+        console.log(this.options);
 
         this.loop = true;
         while (this.iteration < this.MAX_ITERATIONS && this.loop) {

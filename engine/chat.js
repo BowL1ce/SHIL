@@ -13,11 +13,13 @@ export class Chat {
             model: "nvidia/nemotron-nano-9b-v2:free"
         });
 
-        await api.send(...apiArgs);
+        const response = await api.send(...apiArgs);
 
         this.messages.push({
             role: api.response.role,
             content: api.response.content,
         })
+
+        return response;
     }
 }

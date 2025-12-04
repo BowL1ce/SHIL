@@ -1,5 +1,6 @@
 import "dotenv/config";
 import { Client, Events, GatewayIntentBits } from "discord.js";
+import { botMentionedIn } from "./utility/botMentionedIn.js";
 import { DiscordChat } from "./impl/DiscordChat.js";
 
 export const chats = {}
@@ -8,22 +9,36 @@ const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent,
+    GatewayIntentBits.GuildMessageReactions,
   ],
 });
 
-client.on(Events.ClientReady, async (client) => {
-  console.log(`logged as ${client.user.globalName}`);
+client.on(Events.ClientReady, readyClient => {
+  console.log(`Logged in as ${readyClient.user.tag}!`);
 });
 
 client.on(Events.MessageCreate, async (message) => {
+  if (!botMentionedIn(client, message)) return;
+
   const id = message.author.id;
 
-  console.log(message);
+  if (!chats[id]) chats[id] = new DiscordChat();
 
-  // if (!chats[id]) chats[id] = new DiscordChat();
-
-  // await chats[id].send(message)
+  await chats[id].send(message)
 });
 
 client.login(process.env.DISCORD_TOKEN);
+
+// import { Chat } from "./engine/chat.js"
+
+// async function main() {
+//   const chat = new Chat();
+//   const response = await chat.send(
+//       "привет",
+//       async (response) => {
+          
+//       }
+//   )
+//   console.log(response);
+// }
+// main();
