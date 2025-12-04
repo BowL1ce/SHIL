@@ -29,16 +29,3 @@ client.on(Events.MessageCreate, async (message) => {
 
 client.login(process.env.DISCORD_TOKEN);
 
-// import { Chat } from "./engine/chat.js"
-
-// async function main() {
-//   const chat = new Chat();
-//   const response = await chat.send(
-//       "привет",
-//       async (response) => {
-          
-//       }
-//   )
-//   console.log(response);
-// }
-// main();
