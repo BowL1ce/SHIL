@@ -1,19 +1,18 @@
-import { Chat } from "./engine/chat.js";
-import { webSearch } from "./engine/tools/webSearch.js";
 import 'dotenv/config';
+import { Client, Events, GatewayIntentBits } from 'discord.js';
 
-(async () => {
-  const chat = new Chat();
-  await chat.send(
-    "поищи в интернете погоду в москве",
-    async (response) => {
-      
-    },
-    async (response) => {
-        console.log(response);
-    },
-    [webSearch]
-  );
+export const chats = {}
 
-  console.log(chat.messages);
-})();
+const client = new Client({ 
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent,
+  ],
+});
+
+client.on(Events.MessageCreate, async (message) => {
+  console.log(message);
+});
+
+client.login(process.env.DISCORD_TOKEN);

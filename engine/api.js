@@ -94,8 +94,6 @@ export class Api {
                 });
             }
 
-            console.log(this.options.messages)
-
             this.iteration++;
         }
 
