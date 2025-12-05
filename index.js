@@ -24,6 +24,10 @@ client.on(Events.MessageCreate, async (message) => {
 
   if (!chats[id]) chats[id] = new DiscordChat();
 
+  message.content = message.content.replace(
+    `<@${client.user.id}>`, ""
+  ).trim()
+
   await chats[id].send(message)
 });
 

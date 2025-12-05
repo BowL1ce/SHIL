@@ -22,7 +22,6 @@ export class Api {
     }
 
     async send(onStream, tools = [], diffTime = 3000) {
-        console.log(this.options);
         this.startTime = performance.now();
 
         const toolsMap = tools.map(tool => ({
