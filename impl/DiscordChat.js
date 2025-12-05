@@ -1,17 +1,21 @@
 import { Chat } from "../engine/Chat.js"
 import { webSearch } from "../engine/tools/webSearch.js"
 import { Message } from "./Message.js";
+import { models } from "../index.js";
 
 export class DiscordChat {
     constructor() {
+        this.models = 
         this.botMessages = []
         this.chat = new Chat()
         this.message = null
+
+        this.chat.model = models[Math.floor(Math.random() * models.length)]
     }
 
     async send(message) {
         this.botMessages.push(
-            new Message()
+            new Message(this.chat)
         );
 
         const response = await this.chat.send(

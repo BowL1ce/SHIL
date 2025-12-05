@@ -5,6 +5,7 @@ export class Chat {
         this.messages = [];
 
         this.include_reasoning = true;
+        this.model = ""
     }
 
     async send(content, ...apiArgs) {
@@ -12,9 +13,9 @@ export class Chat {
 
         const api = new Api({
             messages: this.messages.slice(),
-            model: "nvidia/nemotron-nano-9b-v2:free",
+            model: this.model,
             reasoning: {
-                max_tokens: 1200,
+                max_tokens: 2000,
                 include_reasoning: this.include_reasoning
             },
             max_tokens: 400

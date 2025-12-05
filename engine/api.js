@@ -48,6 +48,7 @@ export class Api {
 
             for await (const chunk of stream) {
                 const delta = chunk.choices[0]?.delta;
+                console.log(delta);
 
                 this.response.content += delta.content ?? "";
                 this.response.reasoning += delta.reasoning ?? "";

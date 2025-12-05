@@ -1,9 +1,12 @@
-import { EmbedBuilder } from "discord.js";
+import { EmbedBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder } from "discord.js";
+import { buttonsId } from "../utility/buttonsId.js";
 
 export class Message {
-    constructor() {
-        this.messages = [];
+    constructor(chat) {
+        this.message = null;
         this.currentIndex = 0;
+
+        this.chat = chat;
     }
 
     _messageData(response) {
@@ -12,20 +15,31 @@ export class Message {
             embeds: []
         }
         if (messageData.content === "") messageData.content = "..."
+
+        const reasoning = response.reasoning
         if (response.reasoning) messageData.embeds.push(
             new EmbedBuilder()
             .setTitle("reasoning")
-            .setDescription(response.reasoning)
+            .setDescription(reasoning.slice(reasoning.length - 2000, reasoning.length))
         )
 
         for (const tool of response.toolCalls) {
+            let text = "";
+            try {
+                text = Object.entries(JSON.parse(tool.arguments ?? "{}"))
+                .map(([key, value]) => `**${key}**: ${value ?? '—'}`)
+                .join('\n')
+            } catch {
+                text = "-"
+            }
+
             messageData.embeds.push(
                 new EmbedBuilder()
                 .setTitle(tool.name)
-                .setDescription(tool.arguments)
+                .setDescription(text)
                 .addFields({ 
                     name: 'result', 
-                    value: (tool.result ?? '—').toString().slice(0, 500),
+                    value: (tool.result ?? '-').toString().slice(0, 500),
                     inline: true 
                 })
             );
@@ -34,38 +48,43 @@ export class Message {
         return messageData;
     }
 
-    async execude(message, chat) {
-        const messageData = this._messageData(chat.api.response);
+    async execude(message, response) {
+        const messageData = this._messageData(response);
 
-        if (this.messages.length === 0) {
-            this.messages.push(
-                await message.reply(messageData)
-            );
+        if (!this.message) {
+            this.message = await message.reply(messageData);
         } else {
-            await this.messages[this.messages.length - 1].edit(messageData)
+            await this.message.edit(messageData)
         }
     }
 
-    async execudeFinal(message, chat) {
-        
-        
-        const messageData = this._messageData(chat.api.response);
+    async execudeFinal(message, response) {
+        const messageData = this._messageData(response);
 
-        const button = new ButtonBuilder()
-        .setCustomId('reasoning')
-        .setLabel('🧠')
-        .setStyle(chat.reasoning ? ButtonStyle.Primary : ButtonStyle.Secondary);
+        const reasoning = new ButtonBuilder()
+            .setCustomId(buttonsId.Reasoning)
+            .setLabel('🧠')
+            .setStyle(this.chat.reasoning ? ButtonStyle.Secondary : ButtonStyle.Primary);
+        const clear = new ButtonBuilder()
+            .setCustomId(buttonsId.Clear)
+            .setLabel('🗑️')
+            .setStyle(ButtonStyle.Danger);
+
         messageData.components = [
             new ActionRowBuilder()
-            .addComponents(button)
+                .addComponents([reasoning, clear]),
+            new ActionRowBuilder()
+                .addComponents(new ButtonBuilder()
+                    .setCustomId(buttonsId.ChangeModel)
+                    .setLabel('change model')
+                    .setStyle(ButtonStyle.Secondary)
+                )
         ];
 
-        if (!this.messages) {
-            this.messages.push(
-                await message.reply(messageData)
-            );
+        if (!this.message) {
+            this.message = await message.reply(messageData);
         } else {
-            await this.messages[this.messages.length - 1].edit(messageData)
+            await this.message.edit(messageData)
         }
     }
 }
