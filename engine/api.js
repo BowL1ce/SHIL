@@ -3,9 +3,10 @@ import { OpenRouter } from '@openrouter/sdk';
 export class Api {
     constructor(apiOptions = {}) {
         this.openRouter = new OpenRouter({
-            apiKey: process.env.OPENROUTER_API_KEY1
+            apiKey: process.env.OPENROUTER_API_KEY2
         });
         this.options = { ...apiOptions };
+        this.options.tools = this.options.tools ?? [];
 
         this.response = {
             content: "",
@@ -21,59 +22,88 @@ export class Api {
         this.loop = false;
     }
 
-    async send(onStream, tools = [], diffTime = 3000) {
+    async send(onStream, diffTime = 3000) {
         this.startTime = performance.now();
-
-        const toolsMap = tools.map(tool => ({
-            type: "function",
-            function: {
-                name: tool.function.name,
-                description: tool.function.description,
-                parameters: tool.function.parameters
-            }
-        }));
-
         this.loop = true;
         while (this.iteration < this.MAX_ITERATIONS && this.loop) {
             this.loop = false;
 
-            const sendOptions = {
+            const toolsMap = this.options.tools.map(tool => ({
+                type: "function",
+                function: {
+                    name: tool.function.name,
+                    description: tool.function.description,
+                    parameters: tool.function.parameters
+                }
+            }));
+
+            const body = {
                 ...this.options,
-                tools: toolsMap.length > 0 ? toolsMap : undefined,
                 stream: true,
-                streamOptions: { includeUsage: true }
+                tools: toolsMap.length ? toolsMap : undefined
             };
 
-            const stream = await this.openRouter.chat.send(sendOptions);
+            const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY2}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(body)
+            });
 
-            for await (const chunk of stream) {
-                const delta = chunk.choices[0]?.delta;
-                console.log(delta);
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
 
-                this.response.content += delta.content ?? "";
-                this.response.reasoning += delta.reasoning ?? "";
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
 
-                const toolCalls = delta.toolCalls;
-                if (toolCalls?.length > 0) {
-                    for (const tc of toolCalls) {
-                        const idx = tc.index;
-                        const func = tc.function;
-                        if (!this.response.toolCalls[idx]) this.response.toolCalls[idx] = { name: "", arguments: "" };
-                        if (func?.name) this.response.toolCalls[idx].name += func.name;
-                        if (func?.arguments) this.response.toolCalls[idx].arguments += func.arguments;
+                const chunk = decoder.decode(value);
+                const lines = chunk.split('\n');
+
+                for (const line of lines) {
+                    try {
+                        if (line.startsWith('data: ')) {
+                            const data = line.slice(6);
+                            if (data === '[DONE]') continue;
+
+                            const parsed = JSON.parse(data);
+                            const delta = parsed.choices[0]?.delta;
+
+                            //console.log(delta);
+
+                            this.response.content += delta.content ?? "";
+                            this.response.reasoning += delta.reasoning ?? "";
+
+                            const toolCalls = delta.tool_calls || delta.toolCalls;
+                            if (toolCalls?.length > 0) {
+                                for (const tc of toolCalls) {
+                                    const idx = tc.index ?? 0;
+                                    if (!this.response.toolCalls[idx]) {
+                                        this.response.toolCalls[idx] = { name: "", arguments: "" };
+                                    }
+
+                                    this.response.toolCalls[idx].name += tc.function.name ?? "";
+                                    this.response.toolCalls[idx].arguments += tc.function.arguments ?? "";
+                                }
+                            }
+
+                            if (performance.now() - this.startTime > diffTime) {
+                                this.startTime = performance.now();
+                                await onStream(this.response);
+                            }
+                        }
+                    } catch {
+
                     }
-                }
-
-                if (performance.now() - this.startTime > diffTime) {
-                    this.startTime = performance.now();
-                    await onStream(this.response);
                 }
             }
 
             for (const [index, toolCall] of this.response.toolCalls.entries()) {
                 if (this.response.toolCalls[index].result) continue;
 
-                const tool = tools.find(t => t.function.name === toolCall.name);
+                const tool = this.options.tools.find(t => t.function.name === toolCall.name);
                 const args = JSON.parse(toolCall.arguments);
                 const result = await tool.execute(args);
                 this.response.toolCalls[index].result = result;
@@ -90,7 +120,7 @@ export class Api {
                     })))
                 });
                 this.options.messages.push({
-                    role: "user",
+                    role: "user", // на сколько мне известно, не все модели поддерживают assistant как запрос, так что нет
                     content: JSON.stringify(this.response.toolCalls)
                 });
             }

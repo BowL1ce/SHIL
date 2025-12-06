@@ -1,5 +1,4 @@
-import { Chat } from "../engine/Chat.js"
-import { webSearch } from "../engine/tools/webSearch.js"
+import { Chat } from "../engine/chat.js"
 import { Message } from "./Message.js";
 import { models } from "../index.js";
 
@@ -23,7 +22,6 @@ export class DiscordChat {
             async (response) => {
                 this.botMessages[this.botMessages.length - 1].execude(message, response)
             },
-            [webSearch],
             1000
         );
 

@@ -3,12 +3,11 @@ import { Client, Events, GatewayIntentBits } from "discord.js";
 import { botMentionedIn } from "./utility/botMentionedIn.js";
 import { DiscordChat } from "./impl/DiscordChat.js";
 import { buttonsId } from "./utility/buttonsId.js";
-import { toggleReasoning, clearChat } from "./impl/buttons.js";
+import { toggleReasoning, clearChat, changeModel } from "./impl/buttons.js";
 
 export const chats = {}
 export const models = [
-  "nvidia/nemotron-nano-9b-v2:free",
-  //"arcee-ai/trinity-mini:free" // по какимто причинам, в новейших моделях решили переделать нахуй json схему стрим вывода, если вы будете готовы чинить класс Api, пожалуйса
+  "arcee-ai/trinity-mini:free",
 ]
 
 const client = new Client({ 
@@ -25,13 +24,11 @@ client.on(Events.ClientReady, readyClient => {
 
 client.on(Events.InteractionCreate, async (inter) => {
   if (inter.isButton()) {
-    if (
-      (
-        await inter.channel.messages.fetch(
-          inter.message.reference.messageId
-        )
-      ).author.id != inter.user.id
-    ) {
+    const referencedMessage = await inter.channel.messages.fetch(inter.message.reference.messageId);
+    const isAuthorUser = referencedMessage.author.id === inter.user.id;
+    const isAuthorBot = referencedMessage.author.id === client.user.id;
+
+    if (!isAuthorUser && !isAuthorBot) {
       await inter.reply({
         content: "this is not your chat",
         ephemeral: true
@@ -39,9 +36,19 @@ client.on(Events.InteractionCreate, async (inter) => {
       return;
     }
 
-    switch (inter.customId) {
-      case buttonsId.Reasoning: await toggleReasoning(inter);
-      case buttonsId.Clear: await clearChat(inter);
+    switch (inter.customId.split("_")[0]) {
+      case buttonsId.Reasoning: {
+        await toggleReasoning(inter);
+        return;
+      }
+      case buttonsId.Clear: {
+        await clearChat(inter);
+        return;
+      }
+      case buttonsId.ChangeModel: {
+        await changeModel(inter, inter.customId.split("_")[1]);
+        return;
+      }
     }
   }
 });

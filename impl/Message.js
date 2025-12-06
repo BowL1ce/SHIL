@@ -20,7 +20,7 @@ export class Message {
         if (response.reasoning) messageData.embeds.push(
             new EmbedBuilder()
             .setTitle("reasoning")
-            .setDescription(reasoning.slice(reasoning.length - 2000, reasoning.length))
+            .setDescription(reasoning)
         )
 
         for (const tool of response.toolCalls) {
@@ -69,16 +69,14 @@ export class Message {
             .setCustomId(buttonsId.Clear)
             .setLabel('🗑️')
             .setStyle(ButtonStyle.Danger);
+        const change = new ButtonBuilder()
+            .setCustomId(buttonsId.ChangeModel)
+            .setLabel('change model')
+            .setStyle(ButtonStyle.Secondary)
 
         messageData.components = [
             new ActionRowBuilder()
-                .addComponents([reasoning, clear]),
-            new ActionRowBuilder()
-                .addComponents(new ButtonBuilder()
-                    .setCustomId(buttonsId.ChangeModel)
-                    .setLabel('change model')
-                    .setStyle(ButtonStyle.Secondary)
-                )
+            .addComponents([reasoning, clear, change]),
         ];
 
         if (!this.message) {

@@ -5,6 +5,7 @@ import {
 
 export function botMentionedIn(client, message) {
   if (message.partial) return false;
+  if (message.author.id == client.user.id) return false;
 
   const botId = client.user.id;
   const content = message.content ?? '';

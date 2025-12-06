@@ -1,4 +1,5 @@
 import { Api } from "./Api.js";
+import { webSearch } from "./tools.js"
 
 export class Chat {
     constructor() {
@@ -15,10 +16,11 @@ export class Chat {
             messages: this.messages.slice(),
             model: this.model,
             reasoning: {
-                max_tokens: 2000,
+                max_tokens: 1200,
                 include_reasoning: this.include_reasoning
             },
-            max_tokens: 400
+            max_tokens: 400,
+            tools: [webSearch]
         });
 
         const response = await api.send(...apiArgs);
