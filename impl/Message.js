@@ -12,9 +12,20 @@ export class Message {
     _messageData(response) {
         const messageData = {
             content: response.content,
+            attachments: [],
             embeds: []
         }
         if (messageData.content === "") messageData.content = "..."
+
+        const imageUrlRegex = /https?:\/\/[^\s]+?\.(png|jpg|jpeg|gif|webp)(\?[^\s]*)?(?=!?[\s<)"'\]])/gi;
+        const matches = [...messageData.content.matchAll(imageUrlRegex)];
+        const imageUrls = matches.map(m => m[0]);
+        imageUrls.forEach((url, index) => {
+            messageData.attachments.push({
+                url: url,
+                filename: `image_${index + 1}.${url.split('.').pop().split('?')[0]}`
+            });
+        });
 
         const reasoning = response.reasoning
         if (response.reasoning) messageData.embeds.push(

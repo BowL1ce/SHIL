@@ -1,5 +1,5 @@
 import { Api } from "./Api.js";
-import { webSearch } from "./tools.js"
+import { webSearch, generateImage } from "./tools.js"
 
 export class Chat {
     constructor() {
@@ -20,14 +20,14 @@ export class Chat {
                 include_reasoning: this.include_reasoning
             },
             max_tokens: 400,
-            tools: [webSearch]
+            tools: [webSearch, generateImage]
         });
 
         const response = await api.send(...apiArgs);
 
         this.messages.push({
             role: api.response.role,
-            content: api.response.content,
+            content: `REASONING:\n${response.reasoning}\n\nCONTENT:\n${response.content}\n\nTOOLS:\n${response.toolCalls}`,
         })
 
         return response;

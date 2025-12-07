@@ -8,6 +8,7 @@ import { toggleReasoning, clearChat, changeModel } from "./impl/buttons.js";
 export const chats = {}
 export const models = [
   "arcee-ai/trinity-mini:free",
+  "amazon/nova-2-lite-v1:free"
 ]
 
 const client = new Client({ 

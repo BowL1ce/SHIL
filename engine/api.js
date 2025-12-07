@@ -2,9 +2,6 @@ import { OpenRouter } from '@openrouter/sdk';
 
 export class Api {
     constructor(apiOptions = {}) {
-        this.openRouter = new OpenRouter({
-            apiKey: process.env.OPENROUTER_API_KEY2
-        });
         this.options = { ...apiOptions };
         this.options.tools = this.options.tools ?? [];
 
