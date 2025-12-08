@@ -68,8 +68,6 @@ export class Api {
                             const parsed = JSON.parse(data);
                             const delta = parsed.choices[0]?.delta;
 
-                            //console.log(delta);
-
                             this.response.content += delta.content ?? "";
                             this.response.reasoning += delta.reasoning ?? "";
 
@@ -92,7 +90,7 @@ export class Api {
                             }
                         }
                     } catch {
-
+                        console.log(lines);
                     }
                 }
             }

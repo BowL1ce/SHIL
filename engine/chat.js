@@ -27,7 +27,7 @@ export class Chat {
 
         this.messages.push({
             role: api.response.role,
-            content: `REASONING:\n${response.reasoning}\n\nCONTENT:\n${response.content}\n\nTOOLS:\n${response.toolCalls}`,
+            content: response.content,
         })
 
         return response;

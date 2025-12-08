@@ -76,7 +76,7 @@ export async function changeModel(inter, modelId=null) {
             );
         }
         await inter.reply({
-            content: "chose model:",
+            content: `current model: \`${chat.model}\`\nchose model:`,
             components: [
                 new ActionRowBuilder()
                 .addComponents(buttons)
