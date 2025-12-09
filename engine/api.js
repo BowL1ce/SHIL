@@ -19,6 +19,26 @@ export class Api {
         this.loop = false;
     }
 
+    _handleDelta(parsed) {
+        const delta = parsed.choices[0]?.delta;
+
+        this.response.content += delta.content ?? "";
+        this.response.reasoning += delta.reasoning ?? "";
+
+        const toolCalls = delta.tool_calls || delta.toolCalls;
+        if (toolCalls?.length > 0) {
+            for (const tc of toolCalls) {
+                const idx = tc.index ?? 0;
+                if (!this.response.toolCalls[idx]) {
+                    this.response.toolCalls[idx] = { name: "", arguments: "" };
+                }
+
+                this.response.toolCalls[idx].name += tc.function.name ?? "";
+                this.response.toolCalls[idx].arguments += tc.function.arguments ?? "";
+            }
+        }
+    }
+
     async send(onStream, diffTime = 3000) {
         this.startTime = performance.now();
         this.loop = true;
@@ -56,41 +76,27 @@ export class Api {
                 const { done, value } = await reader.read();
                 if (done) break;
 
-                const chunk = decoder.decode(value);
-                const lines = chunk.split('\n');
+                let buffer = "";  // я точно не знаю, будет ли это работать, но не теряем надежду
+
+                const chunk = decoder.decode(value, { stream: true });
+                buffer += chunk;
+
+                const lines = buffer.split('\n');
+                buffer = lines.pop();
 
                 for (const line of lines) {
+                    const trimmed = line.trim();
+                    if (!trimmed) continue;
+                    if (!trimmed.startsWith('data: ')) continue;
+
+                    const data = trimmed.slice(6);
+                    if (data === '[DONE]') continue;
+
                     try {
-                        if (line.startsWith('data: ')) {
-                            const data = line.slice(6);
-                            if (data === '[DONE]') continue;
-
-                            const parsed = JSON.parse(data);
-                            const delta = parsed.choices[0]?.delta;
-
-                            this.response.content += delta.content ?? "";
-                            this.response.reasoning += delta.reasoning ?? "";
-
-                            const toolCalls = delta.tool_calls || delta.toolCalls;
-                            if (toolCalls?.length > 0) {
-                                for (const tc of toolCalls) {
-                                    const idx = tc.index ?? 0;
-                                    if (!this.response.toolCalls[idx]) {
-                                        this.response.toolCalls[idx] = { name: "", arguments: "" };
-                                    }
-
-                                    this.response.toolCalls[idx].name += tc.function.name ?? "";
-                                    this.response.toolCalls[idx].arguments += tc.function.arguments ?? "";
-                                }
-                            }
-
-                            if (performance.now() - this.startTime > diffTime) {
-                                this.startTime = performance.now();
-                                await onStream(this.response);
-                            }
-                        }
-                    } catch {
-                        console.log(lines);
+                        const parsed = JSON.parse(data);
+                        this._handleDelta(parsed);
+                    } catch (e) {
+                        console.warn(lines);
                     }
                 }
             }
@@ -99,6 +105,7 @@ export class Api {
                 if (this.response.toolCalls[index].result) continue;
 
                 const tool = this.options.tools.find(t => t.function.name === toolCall.name);
+                console.log(toolCall.arguments);
                 const args = JSON.parse(toolCall.arguments);
                 const result = await tool.execute(args);
                 this.response.toolCalls[index].result = result;

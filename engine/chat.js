@@ -30,6 +30,8 @@ export class Chat {
             content: response.content,
         })
 
+        console.log(this.messages)
+
         return response;
     }
 }
